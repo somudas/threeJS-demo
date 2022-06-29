@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+            canvas {background: #aaa;}
+            div{
+                position: absolute;
+                color: aliceblue;
+                font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+                font-size: 40px;
+                text-align: center;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%,-50%);
+            }
+            span{
+                width: 100%;
+                text-align: center;
+                font-size: 100px;
+            }
+
+		</style>
+	</head>
+	<body>
+		<div>INTRODUCING<br><span>three.JS</span></div>
+        <canvas id="myCanvas"></canvas>
+        
+        <script src="js/three.js"></script>
+		<script>
+            function foo(x,z,t){
+                let d = Math.sqrt(x*x + z*z);
+                d = Math.abs(Math.sin(d+t));
+                return d;
+            }
+            var width = document.body.clientWidth;
+            var height = document.body.clientHeight;
+
+            var renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('myCanvas'),
+                antialias: true
+            });
+
+            renderer.setClearColor(0x000);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(width, window.innerHeight);
+
+            var camera = new THREE.PerspectiveCamera(35, width/window.innerHeight, 0.1, 3000);
+
+            camera.position.set(0,200,-500);
+            camera.lookAt(0,0,-500);
+
+            var scene = new THREE.Scene();
+            var geometry = new THREE.BoxGeometry(10,10,10);
+            var material = new THREE.MeshLambertMaterial({color: 0xeb8334});
+            //var mesh = new THREE.Mesh(geometry, material);
+
+            var meshes = []
+            for(let x = -5;x<=5;x+=0.5){
+                let m = [];
+                for(let z =-5;z<=5;z+=0.5){
+
+                    let y = 5*foo(x,z,0);
+                    var geo = new THREE.BoxGeometry(5,y+10,5);
+                    var mat = new THREE.MeshLambertMaterial({color: 0x11bbff});
+            
+
+                    let mesh_ = new THREE.Mesh(geo, mat);
+                    mesh_.position.x = x*10;
+                    mesh_.position.y = -50;
+                    
+                    mesh_.position.z = z*10-500;
+
+                    scene.add(mesh_);
+                    m.push(mesh_);
+                }
+                meshes.push(m);
+            }
+            //mesh.position.set(0,-50,-500);
+            //scene.add(mesh);
+
+            var light = new THREE.AmbientLight(0xffffff, 0.51);
+            scene.add(light);
+
+            var light2 = new THREE.PointLight(0xffffff, 0.1);
+            light2.position.set(0,1000,-500)
+            light2.castShadow = true;
+            scene.add(light2);
+
+            const rectLight = new THREE.RectAreaLight( 0xaa55ff, 1,  100,100 );
+            rectLight.position.set( 0, 50, -500 );
+            rectLight.lookAt( 0, 0, -500 );
+            //scene.add(rectLight);
+
+            
+            var plane = new THREE.PlaneGeometry(10000,10000);
+            var material_plane = new THREE.MeshLambertMaterial({color: 0x000000, side: THREE.DoubleSide});
+            var mesh2 = new THREE.Mesh(plane, material_plane);
+            mesh2.position.set(0,-200,-1000);
+            mesh2.rotation.x = -0.5*Math.PI;
+
+            scene.add(mesh2);
+
+            let iTime = 0;
+            function render(){
+                renderer.render(scene, camera);
+                let i=0,j=0;
+                for(let x = -5;x<=5;x+=0.5){    
+                    for(let z =-5;z<=5;z+=0.5){
+                        let y = foo(x,z,iTime);
+                        meshes[i][j].scale.y = y*3;
+                        //console.log(i+' '+ j);
+                        j++;
+                    }
+                    i++;
+                    j=0;
+                }
+
+                iTime -= 0.05;
+                requestAnimationFrame(render);
+            }
+            render();
+            
+
+
+            
+
+        </script>
+	</body>
+</html>
